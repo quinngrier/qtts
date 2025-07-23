@@ -1,0 +1,428 @@
+#! /usr/bin/env bash
+
+#
+# The authors of this file have waived all copyright and
+# related or neighboring rights to the extent permitted by
+# law as described by the CC0 1.0 Universal Public Domain
+# Dedication. You should have received a copy of the full
+# dedication along with this file, typically as a file
+# named <CC0-1.0.txt>. If not, it may be available at
+# <https://creativecommons.org/publicdomain/zero/1.0/>.
+#
+
+#
+# Usage: qtts [<word>...]
+#
+# Converts text to speech.
+#
+# If at least one <word> is given, the input is the space-separated
+# concatenation of the <word>s. Otherwise, the input is read from
+# standard input.
+#
+# By default, this script will try to find and use the best text to
+# speech engine you have available. To use a specific engine, set the
+# QTTS_ENGINE environment variable to one of the engines detailed below.
+#
+# By default, the speech is played aloud using your sound card. To save
+# it to a WAV file instead, set the QTTS_OUTFILE environment variable to
+# a file path. To output the WAV file directly to standard output, set
+# QTTS_OUTFILE to "-".
+#
+# Unless otherwise stated, all engines are run locally inside a Docker
+# container with internet access disabled. However, the first time you
+# use such an engine, it may need to run a one-time build process that
+# accesses the internet. This one-time build process will never leak
+# your input, though.
+#
+# The supported engines are as follows:
+#
+#    chatterbox
+#
+#       This is <https://github.com/resemble-ai/chatterbox>.
+#
+#    dotnet
+#
+#       This is the SpeechSynthesizer class from .NET, run
+#       directly on your host machine using PowerShell.
+#
+#       It's unlikely that this engine will ever access the
+#       internet, but it's still just a .NET call on your host
+#       machine. Use at your own risk.
+#
+#       If you're on Windows and don't have QTTS_ENGINE set, this
+#       engine will always be tried as a last resort.
+#
+#    kokoro
+#
+#       This is <https://github.com/hexgrad/kokoro>.
+#
+
+set -E -e -u -o pipefail || exit $?
+trap exit ERR
+declare -r -x LC_ALL=C
+unset IFS
+
+case ${1-} in -*)
+  printf '%s\n' "Options are not supported yet." >&2
+  exit 1
+esac
+
+on_cygwin=0
+if command -v cygcheck &>/dev/null; then
+  on_cygwin=1
+fi
+readonly on_cygwin
+
+#-----------------------------------------------------------------------
+# Create a temporary directory
+#-----------------------------------------------------------------------
+
+if tmpdir=$(mktemp -d 2>/dev/null); then
+  if [[ ${tmpdir:0:1} != / ]]; then
+    if [[ ${PWD: -1:1} == / ]]; then
+      tmpdir=$PWD$tmpdir
+    else
+      tmpdir=$PWD/$tmpdir
+    fi
+  fi
+  if [[ ${tmpdir: -1:1} == / ]]; then
+    tmpdir+=.
+  fi
+else
+  tmpdir=${TMPDIR:-/tmp}
+  if [[ ${tmpdir:0:1} != / ]]; then
+    if [[ ${PWD: -1:1} == / ]]; then
+      tmpdir=$PWD$tmpdir
+    else
+      tmpdir=$PWD/$tmpdir
+    fi
+  fi
+  mkdir -p "$tmpdir"
+  if [[ ${tmpdir: -1:1} != / ]]; then
+    tmpdir+=/
+  fi
+  tmpdir+=tmp.
+  x=bcdfghjklmnpqrstvwxyz
+  for ((i = 0; i < 10; ++i)); do
+    tmpdir+=${x:RANDOM % ${#x}:1}
+  done
+  mkdir "$tmpdir"
+fi
+chmod 700 "$tmpdir"
+readonly tmpdir
+
+trap '
+  readonly exit_status=$?
+  rm -f -r "$tmpdir" || :
+  exit $exit_status
+' EXIT
+
+#-----------------------------------------------------------------------
+# Read the input text
+#-----------------------------------------------------------------------
+#
+# Some engines pause on newlines or can't handle long input very well.
+# To fix this, we join each run of nonempty lines into a single line and
+# parse the resulting lines into an array to feed into the engine one at
+# a time. We also remove comment leaders like # and //.
+#
+
+adjust_input='
+  {
+    if ($0) {
+      if (/^ *# /) {
+        sub(/^ *# */, "");
+      } else if (/^ *\/\/ /) {
+        sub(/^ *\/\/ */, "");
+      }
+      if (buf) {
+        buf = buf " ";
+      }
+      buf = buf $0;
+    } else if (buf) {
+      print buf;
+      buf = "";
+    }
+  }
+  END {
+    if (buf) {
+      print buf;
+    }
+  }
+'
+readonly adjust_input
+
+IFS=$'\n'
+if (($# == 0)); then
+  input_lines=($(awk "$adjust_input"))
+else
+  input_lines=($(awk "$adjust_input" <<<"$@"))
+fi
+unset IFS
+readonly input_lines
+
+#-----------------------------------------------------------------------
+
+if [[ ! ${QTTS_HAVE_DOCKER+x} ]]; then
+  QTTS_HAVE_DOCKER=0
+  if command -v docker &>/dev/null; then
+    QTTS_HAVE_DOCKER=1
+  fi
+fi
+readonly QTTS_HAVE_DOCKER
+
+if [[ ! ${QTTS_DOCKER_GPUS+x} ]]; then
+  QTTS_DOCKER_GPUS=
+  if [[ $QTTS_HAVE_DOCKER == 1 ]]; then
+    if docker run --rm --gpus all hello-world &>/dev/null; then
+      QTTS_DOCKER_GPUS='--gpus all'
+    fi
+  fi
+fi
+readonly QTTS_DOCKER_GPUS
+
+if [[ ${WINDIR+x} && ! ${AUDIODRIVER+x} ]]; then
+  AUDIODRIVER=waveaudio
+  readonly AUDIODRIVER
+  export AUDIODRIVER
+fi
+
+#-----------------------------------------------------------------------
+# chatterbox
+#-----------------------------------------------------------------------
+
+if [[ ${QTTS_ENGINE-} == chatterbox ]]; then
+
+  if [[ ! $QTTS_DOCKER_GPUS ]]; then
+    printf '%s\n' "$0: QTTS_ENGINE=chatterbox requires QTTS_DOCKER_GPUS." >&2
+    exit 1
+  fi
+
+  x=$(docker images -q qtts-chatterbox)
+  if [[ ! $x ]]; then
+    docker build -t qtts-chatterbox.tmp - <<<'
+      FROM python:3.9
+      RUN pip install chatterbox-tts==0.1.1
+      RUN printf '\''%s\n'\'' \
+        '\''from chatterbox.tts import ChatterboxTTS'\'' \
+        '\''from contextlib import redirect_stdout'\'' \
+        '\''import os'\'' \
+        '\''import sys'\'' \
+        '\''text = sys.stdin.read()'\'' \
+        '\''with open(os.devnull, "w") as f, redirect_stdout(f):'\'' \
+        '\''  model = ChatterboxTTS.from_pretrained(device="cuda")'\'' \
+        '\''  speech = model.generate(text, cfg_weight=0.3)'\'' \
+        '\''speech = speech.cpu().numpy().tobytes()'\'' \
+        '\''sys.stdout.buffer.write(speech)'\'' \
+        >/run.py \
+      ;
+    ' >&2
+    docker rm -f qtts-chatterbox.tmp
+    docker run \
+      $QTTS_DOCKER_GPUS \
+      --name qtts-chatterbox.tmp \
+      --stop-timeout 0 \
+      -i \
+      qtts-chatterbox.tmp \
+      python /run.py \
+      <<<"hello" \
+      >/dev/null \
+    ;
+    docker commit qtts-chatterbox.tmp qtts-chatterbox
+    docker rm qtts-chatterbox.tmp
+    docker rmi qtts-chatterbox.tmp
+  fi
+
+  pid=
+
+  trap '
+    if [[ $pid ]]; then
+      if ((on_cygwin)); then
+        /bin/kill -f $pid || :
+      fi
+    fi
+  ' SIGINT
+
+  if [[ ${QTTS_OUTFILE+x} ]]; then
+    x1='--type wav --'
+    x2=$QTTS_OUTFILE
+  else
+    x1=
+    x2=--default-device
+  fi
+
+  for input_line in "${input_lines[@]}"; do
+    docker run \
+      $QTTS_DOCKER_GPUS \
+      --network none \
+      --rm \
+      --stop-timeout 0 \
+      -i \
+      qtts-chatterbox \
+      python /run.py \
+      <<<"$input_line" \
+      2>/dev/null \
+    ;
+  done | sox \
+    --no-show-progress \
+    --norm \
+    --rate 24000 \
+    --type .f32 \
+    -V1 \
+    - \
+    $x1 \
+    "$x2" \
+  &
+
+  pid=$!
+
+  wait $pid
+
+  exit
+
+fi
+
+#-----------------------------------------------------------------------
+# kokoro
+#-----------------------------------------------------------------------
+
+if [[ ${QTTS_ENGINE-} == kokoro || \
+      ( ! ${QTTS_ENGINE+x} && $QTTS_HAVE_DOCKER == 1 ) ]]; then
+
+  x=$(docker images -q qtts-kokoro:0.9.4)
+  if [[ ! $x ]]; then
+    docker build -t qtts-kokoro:0.9.4 - <<<'
+      FROM python:3.10
+      RUN apt-get -q -y update
+      RUN apt-get -q -y install espeak-ng
+      RUN pip install kokoro==0.9.4 numpy
+      RUN printf '\''%s\n'\'' \
+        '\''from kokoro import KPipeline'\'' \
+        '\''pipeline = KPipeline(lang_code="a")'\'' \
+        '\''generator = pipeline("hello",'\'' \
+        '\''  speed=1.25,'\'' \
+        '\''  voice="af_heart",'\'' \
+        '\'')'\'' \
+        '\''for i, (gs, ps, audio) in enumerate(generator):'\'' \
+        '\''  pass'\'' \
+        >/init.py \
+      ;
+      RUN python /init.py
+      RUN printf '\''%s\n'\'' \
+        '\''from kokoro import KPipeline'\'' \
+        '\''import numpy as np'\'' \
+        '\''import os'\'' \
+        '\''import sys'\'' \
+        '\''stdout = sys.stdout'\'' \
+        '\''sys.stdout = open(os.devnull, "w")'\'' \
+        '\''pipeline = KPipeline(lang_code="a")'\'' \
+        '\''generator = pipeline(sys.stdin.read(),'\'' \
+        '\''  speed=1.25,'\'' \
+        '\''  voice="af_heart",'\'' \
+        '\'')'\'' \
+        '\''for i, (gs, ps, audio) in enumerate(generator):'\'' \
+        '\''  audio = np.asarray(audio, dtype=np.float32)'\'' \
+        '\''  audio = audio.tobytes()'\'' \
+        '\''  stdout.buffer.write(audio)'\'' \
+        >/run.py \
+      ;
+    ' >&2
+  fi
+
+  pid=
+
+  trap '
+    if [[ $pid ]]; then
+      if ((on_cygwin)); then
+        /bin/kill -f $pid || :
+      fi
+    fi
+  ' SIGINT
+
+  if [[ ${QTTS_OUTFILE+x} ]]; then
+    x1='--type wav --'
+    x2=$QTTS_OUTFILE
+  else
+    x1=
+    x2=--default-device
+  fi
+
+  for input_line in "${input_lines[@]}"; do
+    docker run \
+      $QTTS_DOCKER_GPUS \
+      --network none \
+      --rm \
+      --stop-timeout 0 \
+      -i \
+      qtts-kokoro:0.9.4 \
+      python /run.py \
+      <<<"$input_line" \
+      2>/dev/null \
+    ;
+  done | sox \
+    --no-show-progress \
+    --norm \
+    --rate 24000 \
+    --type .f32 \
+    -V1 \
+    - \
+    $x1 \
+    "$x2" \
+  &
+
+  pid=$!
+
+  wait $pid
+
+  exit
+
+fi
+
+#-----------------------------------------------------------------------
+# .NET
+#-----------------------------------------------------------------------
+
+if [[ ${QTTS_ENGINE-} == dotnet || \
+      ( ! ${QTTS_ENGINE+x} && ${WINDIR+x} ) ]]; then
+
+  if [[ ${QTTS_OUTFILE+x} ]]; then
+    printf '%s\n' "QTTS_OUTFILE is not supported for this engine yet." >&2
+    exit 1
+  fi
+
+  x=$(
+    awk '
+      BEGIN {
+        q = "'\''";
+      }
+      {
+        if (NR > 1) {
+          printf "%s", " + \"`r`n\" + "
+        }
+        gsub(/'\''/, q q);
+        printf "%s", q $0 q;
+      }
+    ' <<<"${input_lines[@]}"
+  )
+
+  unset pid
+  trap '
+    case ${pid-} in *?)
+      kill -s INT $pid || :
+    esac
+  ' INT
+  PowerShell -Command - <<EOF &
+Add-Type -AssemblyName System.Speech;
+(New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak($x);
+EOF
+  pid=$!
+  wait $pid
+
+  exit
+
+fi
+
+#-----------------------------------------------------------------------
+
+printf '%s\n' "No text to speech engine found." >&2
+exit 1

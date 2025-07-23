@@ -1,0 +1,38 @@
+//
+// The authors of this file have waived all copyright and
+// related or neighboring rights to the extent permitted by
+// law as described by the CC0 1.0 Universal Public Domain
+// Dedication. You should have received a copy of the full
+// dedication along with this file, typically as a file
+// named <CC0-1.0.txt>. If not, it may be available at
+// <https://creativecommons.org/publicdomain/zero/1.0/>.
+//
+
+= Qtts
+:experimental:
+
+:x_download_url: https://raw.githubusercontent.com/quinngrier/qtts/main/qtts
+
+Qtts is a command-line utility for converting text to speech.
+
+Here's how to get started:
+
+. Make sure you have the following tools installed:
+
+.. Bash version 5.2.21 or later.
+You can check this by running `bash --version`.
+
+.. Docker version 28.2.2 or later.
+You can check this by running `docker --version`.
+
+.. SoX version 14.4.2 or later.
+You can check this by running `sox --version`.
+
+. link:{x_download_url}[Download] the `qtts` script.
+You can put the script anywhere you like, but the rest of these steps
+will assume that you've put it somewhere in your `PATH`.
+
+. Run `qtts "The source of the huge river is the clear spring."` to
+generate and play the resulting speech through your sound card.
+
+//
