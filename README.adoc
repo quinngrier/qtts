@@ -12,6 +12,7 @@
 :experimental:
 
 :x_download_url: https://raw.githubusercontent.com/quinngrier/qtts/main/qtts
+:x_man_page_url: https://github.com/quinngrier/qtts/blob/main/qtts.1.adoc
 
 Qtts is a command-line utility for converting text to speech.
 
@@ -34,5 +35,7 @@ will assume that you've put it somewhere in your `PATH`.
 
 . Run `qtts "The source of the huge river is the clear spring."` to
 generate and play the resulting speech through your sound card.
+
+. For more advanced usage, see the link:{x_man_page_url}[man page].
 
 //
