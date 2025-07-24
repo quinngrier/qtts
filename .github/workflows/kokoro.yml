@@ -59,6 +59,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
+          name: output.ogg
           path: output.ogg
 
   push_image:
