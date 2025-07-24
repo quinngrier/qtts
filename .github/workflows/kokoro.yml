@@ -8,8 +8,6 @@
 # <https://creativecommons.org/publicdomain/zero/1.0/>.
 #
 
-name: Build and push Kokoro image
-
 on:
   push:
   schedule:
@@ -19,7 +17,6 @@ on:
 jobs:
 
   build_image:
-    name: Build image
     runs-on: ubuntu-latest
     steps:
       - name: Construct image tag
@@ -44,7 +41,6 @@ jobs:
       tag: ${{ steps.tag.outputs.tag }}
 
   test_image:
-    name: Test image
     needs: build_image
     runs-on: ubuntu-latest
     steps:
@@ -64,7 +60,6 @@ jobs:
 
   push_image:
     if: github.ref == 'refs/heads/main'
-    name: Push image
     needs:
       - build_image
       - test_image
