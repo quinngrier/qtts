@@ -351,7 +351,7 @@ if [[ ${QTTS_ENGINE-} == kokoro || \
       --stop-timeout 0 \
       -i \
       "$QTTS_KOKORO_IMAGE" \
-      python /run.py \
+      python /main.py \
       <<<"${input_lines[i]}" \
       >$i.raw.tmp \
       2>/dev/null \
