@@ -26,8 +26,8 @@ You can check this by running `bash --version`.
 .. Docker version 28.2.2 or later.
 You can check this by running `docker --version`.
 
-.. SoX version 14.4.2 or later.
-You can check this by running `sox --version`.
+.. FFmpeg version 6.1.1 or later.
+You can check this by running `ffmpeg -version`.
 
 . link:{x_download_url}[Download] the `qtts` script.
 You can put the script anywhere you like, but the rest of these steps
