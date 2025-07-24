@@ -14,7 +14,8 @@
 :x_download_url: https://raw.githubusercontent.com/quinngrier/qtts/main/qtts
 :x_man_page_url: https://github.com/quinngrier/qtts/blob/main/qtts.1.adoc
 
-Qtts is a text-to-speech CLI that wraps various underlying models.
+Qtts is a text-to-speech CLI wrapper that supports various underlying
+models.
 
 Here's how to get started:
 
@@ -29,9 +30,8 @@ You can check this by running `docker --version`.
 .. FFmpeg version 6.1.1 or later.
 You can check this by running `ffmpeg -version`.
 
-. link:{x_download_url}[Download] the `qtts` script.
-You can put the script anywhere you like, but the rest of these steps
-will assume that you've put it somewhere in your `PATH`.
+. link:{x_download_url}[Download] the `qtts` script and optionally put
+it in your `PATH`.
 
 . Run `qtts "The fox was quick"` to generate and play the result.
 
