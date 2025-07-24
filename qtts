@@ -306,44 +306,11 @@ fi
 if [[ ${QTTS_ENGINE-} == kokoro || \
       ( ! ${QTTS_ENGINE+x} && $QTTS_HAVE_DOCKER == 1 ) ]]; then
 
-  x=$(docker images -q qtts-kokoro:0.9.4)
+  : ${QTTS_KOKORO_IMAGE:=quinngrier/qtts-kokoro}
+
+  x=$(docker images -q "$QTTS_KOKORO_IMAGE")
   if [[ ! $x ]]; then
-    docker build -t qtts-kokoro:0.9.4 - <<<'
-      FROM python:3.10
-      RUN apt-get -q -y update
-      RUN apt-get -q -y install espeak-ng
-      RUN pip install kokoro==0.9.4 numpy
-      RUN printf '\''%s\n'\'' \
-        '\''from kokoro import KPipeline'\'' \
-        '\''pipeline = KPipeline(lang_code="a")'\'' \
-        '\''generator = pipeline("hello",'\'' \
-        '\''  speed=1.25,'\'' \
-        '\''  voice="af_heart",'\'' \
-        '\'')'\'' \
-        '\''for i, (gs, ps, audio) in enumerate(generator):'\'' \
-        '\''  pass'\'' \
-        >/init.py \
-      ;
-      RUN python /init.py
-      RUN printf '\''%s\n'\'' \
-        '\''from kokoro import KPipeline'\'' \
-        '\''import numpy as np'\'' \
-        '\''import os'\'' \
-        '\''import sys'\'' \
-        '\''stdout = sys.stdout'\'' \
-        '\''sys.stdout = open(os.devnull, "w")'\'' \
-        '\''pipeline = KPipeline(lang_code="a")'\'' \
-        '\''generator = pipeline(sys.stdin.read(),'\'' \
-        '\''  speed=1.25,'\'' \
-        '\''  voice="af_heart",'\'' \
-        '\'')'\'' \
-        '\''for i, (gs, ps, audio) in enumerate(generator):'\'' \
-        '\''  audio = np.asarray(audio, dtype=np.float32)'\'' \
-        '\''  audio = audio.tobytes()'\'' \
-        '\''  stdout.buffer.write(audio)'\'' \
-        >/run.py \
-      ;
-    ' >&2
+    docker pull "$QTTS_KOKORO_IMAGE" >&2
   fi
 
   pid=
@@ -383,7 +350,7 @@ if [[ ${QTTS_ENGINE-} == kokoro || \
       --rm \
       --stop-timeout 0 \
       -i \
-      qtts-kokoro:0.9.4 \
+      "$QTTS_KOKORO_IMAGE" \
       python /run.py \
       <<<"${input_lines[i]}" \
       >$i.raw.tmp \

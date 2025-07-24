@@ -1,0 +1,99 @@
+#
+# The authors of this file have waived all copyright and
+# related or neighboring rights to the extent permitted by
+# law as described by the CC0 1.0 Universal Public Domain
+# Dedication. You should have received a copy of the full
+# dedication along with this file, typically as a file
+# named <CC0-1.0.txt>. If not, it may be available at
+# <https://creativecommons.org/publicdomain/zero/1.0/>.
+#
+
+name: Build and push Kokoro image
+
+on:
+  push:
+  schedule:
+    - cron: 0 0 1 * *
+  workflow_dispatch:
+
+jobs:
+
+  build_image:
+    name: Build image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Construct image tag
+        id: tag
+        run: |
+          tag=`date +%Y-%m-%d`-${GITHUB_RUN_ID?} || exit $?
+          echo tag=${tag?} >>${GITHUB_OUTPUT?} || exit $?
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - name: Build and push candidate image
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: quinngrier/qtts-kokoro:${{ steps.tag.outputs.tag }}-rc
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+
+  test_image:
+    name: Test image
+    needs: build_image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run test script
+        run: |
+          input="The quick brown fox jumped over the lazy dog."
+          export QTTS_OUTFILE=output.ogg
+          export QTTS_ENGINE=kokoro
+          export QTTS_KOKORO_IMAGE=quinngrier/qtts-kokoro:${{ steps.tag.outputs.tag }}-rc
+          ./qtts "${input?}" || exit $?
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          path: output.ogg
+
+  push_image:
+    if: github.ref == 'refs/heads/main'
+    name: Push image
+    needs:
+      - build_image
+      - test_image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - name: Pull candidate image
+        run: |
+          docker pull \
+            quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }}-rc \
+          || exit $?
+      - name: Tag final images
+        run: |
+          docker tag \
+            quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }}-rc \
+            quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }} \
+          || exit $?
+          docker tag \
+            quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }}-rc \
+            quinngrier/qtts-kokoro:latest \
+          || exit $?
+      - name: Push final images
+        run: |
+          docker push \
+            quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }} \
+          || exit $?
+          docker push \
+            quinngrier/qtts-kokoro:latest \
+          || exit $?
