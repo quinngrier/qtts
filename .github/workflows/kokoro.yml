@@ -37,6 +37,7 @@ jobs:
       - name: Build and push candidate image
         uses: docker/build-push-action@v4
         with:
+          context: kokoro
           push: true
           tags: quinngrier/qtts-kokoro:${{ steps.tag.outputs.tag }}-rc
     outputs:
