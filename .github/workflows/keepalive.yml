@@ -16,6 +16,8 @@
 #       GitHub Actions may be disabled.
 #
 
+name: keepalive
+
 on:
   schedule:
     - cron: 0 0 * * 0

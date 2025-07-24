@@ -8,6 +8,8 @@
 # <https://creativecommons.org/publicdomain/zero/1.0/>.
 #
 
+name: kokoro
+
 on:
   push:
   schedule:
