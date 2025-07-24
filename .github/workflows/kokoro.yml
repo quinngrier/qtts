@@ -54,7 +54,7 @@ jobs:
           export QTTS_OUTFILE=output.ogg
           export QTTS_ENGINE=kokoro
           export QTTS_KOKORO_IMAGE=quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }}-rc
-          ./qtts "${input?}" || exit $?
+          bash -x ./qtts "${input?}" || exit $?
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
