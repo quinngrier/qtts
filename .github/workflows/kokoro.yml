@@ -38,7 +38,7 @@ jobs:
         with:
           context: kokoro
           push: true
-          tags: quinngrier/qtts-kokoro:${{ steps.tag.outputs.tag }}-rc
+          tags: docker.io/quinngrier/qtts-kokoro:${{ steps.tag.outputs.tag }}-rc
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
 
@@ -54,7 +54,7 @@ jobs:
           input="The quick brown fox jumped over the lazy dog."
           export QTTS_OUTFILE=output.ogg
           export QTTS_ENGINE=kokoro
-          export QTTS_KOKORO_IMAGE=quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }}-rc
+          export QTTS_KOKORO_IMAGE=docker.io/quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }}-rc
           bash -x ./qtts "${input?}" || exit $?
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -77,23 +77,23 @@ jobs:
       - name: Pull candidate image
         run: |
           docker pull \
-            quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }}-rc \
+            docker.io/quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }}-rc \
           || exit $?
       - name: Tag final images
         run: |
           docker tag \
-            quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }}-rc \
-            quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }} \
+            docker.io/quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }}-rc \
+            docker.io/quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }} \
           || exit $?
           docker tag \
-            quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }}-rc \
-            quinngrier/qtts-kokoro:latest \
+            docker.io/quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }}-rc \
+            docker.io/quinngrier/qtts-kokoro:latest \
           || exit $?
       - name: Push final images
         run: |
           docker push \
-            quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }} \
+            docker.io/quinngrier/qtts-kokoro:${{ needs.build_image.outputs.tag }} \
           || exit $?
           docker push \
-            quinngrier/qtts-kokoro:latest \
+            docker.io/quinngrier/qtts-kokoro:latest \
           || exit $?
