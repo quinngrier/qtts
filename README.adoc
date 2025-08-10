@@ -14,7 +14,7 @@
 :x_download_url: https://raw.githubusercontent.com/quinngrier/qtts/main/qtts
 :x_man_page_url: https://github.com/quinngrier/qtts/blob/main/qtts.1.adoc
 
-This is Qtts, a text-to-speech CLI wrapper.
+Qtts is a text-to-speech CLI wrapper.
 
 Here's how to get started:
 
