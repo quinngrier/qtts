@@ -16,7 +16,7 @@ endif::[]
 
 ifdef::x_manpage[]
 
-= adock(1)
+= qtts(1)
 :doctype: manpage
 :manmanual: Qtts
 :mansource: Qtts
