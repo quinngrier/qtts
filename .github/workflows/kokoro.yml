@@ -30,8 +30,8 @@ jobs:
         run: |
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
-          tag=`date +%Y-%m-%d`-${GITHUB_RUN_ID?}
-          echo tag=${tag?} >>${GITHUB_OUTPUT?}
+          tag=`date +%Y-%m-%d`-$GITHUB_RUN_ID
+          echo tag=$tag >>$GITHUB_OUTPUT
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Log in to Docker Hub
@@ -64,8 +64,8 @@ jobs:
           input="The quick brown fox jumped over the lazy dog."
           export QTTS_OUTFILE=output.ogg
           export QTTS_ENGINE=kokoro
-          export QTTS_KOKORO_IMAGE=${name?}:${tag?}-rc
-          ./qtts "${input?}"
+          export QTTS_KOKORO_IMAGE=$name:$tag-rc
+          ./qtts "$input"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -90,20 +90,20 @@ jobs:
           trap exit ERR
           name=docker.io/quinngrier/qtts-kokoro
           tag=${{ needs.build_image.outputs.tag }}
-          docker pull ${name?}:${tag?}-rc
+          docker pull $name:$tag-rc
       - name: Tag final images
         run: |
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
           name=docker.io/quinngrier/qtts-kokoro
           tag=${{ needs.build_image.outputs.tag }}
-          docker tag ${name?}:${tag?}-rc ${name?}:${tag?}
-          docker tag ${name?}:${tag?}-rc ${name?}:latest
+          docker tag $name:$tag-rc $name:$tag
+          docker tag $name:$tag-rc $name:latest
       - name: Push final images
         run: |
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
           name=docker.io/quinngrier/qtts-kokoro
           tag=${{ needs.build_image.outputs.tag }}
-          docker push ${name?}:${tag?}
-          docker push ${name?}:latest
+          docker push $name:$tag
+          docker push $name:latest
