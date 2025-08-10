@@ -30,7 +30,7 @@ You can check this by running `docker --version`.
 .. FFmpeg version 6.1.1 or later.
 You can check this by running `ffmpeg -version`.
 
-. link:{x_download_url}[Download] the `qtts` script and optionally put
+. Download the link:{x_download_url}[`qtts`] script and optionally put
 it in your `PATH`.
 
 . Run `qtts "The fox was quick"` to generate and play the result.
