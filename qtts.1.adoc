@@ -18,8 +18,8 @@ ifdef::x_manpage[]
 
 = qtts(1)
 :doctype: manpage
-:manmanual: Qtts
-:mansource: Qtts
+:manmanual: qtts
+:mansource: qtts
 
 endif::[]
 
