@@ -67,12 +67,6 @@ case ${1-} in -*)
   exit 1
 esac
 
-on_cygwin=0
-if command -v cygcheck &>/dev/null; then
-  on_cygwin=1
-fi
-readonly on_cygwin
-
 #-----------------------------------------------------------------------
 # Create a temporary directory
 #-----------------------------------------------------------------------
