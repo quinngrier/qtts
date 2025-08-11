@@ -62,11 +62,6 @@ trap exit ERR
 declare -r -x LC_ALL=C
 unset IFS
 
-case ${1-} in -*)
-  printf '%s\n' "Options are not supported yet." >&2
-  exit 1
-esac
-
 #-----------------------------------------------------------------------
 # Create a temporary directory
 #-----------------------------------------------------------------------
@@ -112,8 +107,41 @@ trap '
 ' EXIT
 
 #-----------------------------------------------------------------------
-# Read the input text
+# Parse the command-line arguments
 #-----------------------------------------------------------------------
+
+parse_options=1
+
+unset input_lines
+
+while (($# > 0)); do
+
+  if ((parse_options)); then
+    case $1 in --)
+      parse_options=0
+      shift
+      continue
+
+    ;; -?*)
+      printf '%s\n' "$0: Error: Unknown option: ${1@Q}" >&2
+      exit 1
+    esac
+  fi
+
+  if [[ ! ${input_lines+x} ]]; then
+    input_lines=$1
+  else
+    input_lines+=" $1"
+  fi
+
+  shift
+
+done
+
+if [[ ! ${input_lines+x} ]]; then
+  input_lines=$(cat)
+fi
+
 #
 # Some engines pause on newlines or can't handle long input very well.
 # To fix this, we join each run of nonempty lines into a single line and
@@ -121,39 +149,40 @@ trap '
 # a time. We also remove comment leaders like # and //.
 #
 
-adjust_input='
-  {
-    if ($0) {
-      if (/^ *# /) {
-        sub(/^ *# */, "");
-      } else if (/^ *\/\/ /) {
-        sub(/^ *\/\/ */, "");
-      }
-      if (buf) {
-        buf = buf " ";
-      }
-      buf = buf $0;
-    } else if (buf) {
-      print buf;
-      buf = "";
-    }
-  }
-  END {
-    if (buf) {
-      print buf;
-    }
-  }
-'
-readonly adjust_input
-
 IFS=$'\n'
-if (($# == 0)); then
-  input_lines=($(awk "$adjust_input"))
-else
-  input_lines=($(awk "$adjust_input" <<<"$@"))
-fi
-unset IFS
+
+input_lines=($(
+  eval " awk"' \
+    '\''
+      {
+        if ($0) {
+          if (/^ *# /) {
+            sub(/^ *# */, "");
+          } else if (/^ *\/\/ /) {
+            sub(/^ *\/\/ */, "");
+          }
+          if (buf) {
+            buf = buf " ";
+          }
+          buf = buf $0;
+        } else if (buf) {
+          print buf;
+          buf = "";
+        }
+      }
+      END {
+        if (buf) {
+          print buf;
+        }
+      }
+    '\'' \
+    <<<"$input_lines" \
+  ;'
+))
+
 readonly input_lines
+
+unset IFS
 
 #-----------------------------------------------------------------------
 
