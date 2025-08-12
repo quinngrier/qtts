@@ -264,6 +264,93 @@ fi
 readonly QTTS_DOCKER_GPUS
 
 #-----------------------------------------------------------------------
+
+run_dockerized_engine() {
+
+  local -r engine=$1
+
+  local -n image=QTTS_${engine^^}_IMAGE
+
+  if [[ ! ${image+x} ]]; then
+    image=docker.io/quinngrier/qtts-$engine
+  fi
+
+  docker image inspect "$image" >/dev/null && :
+  if (($? != 0)); then
+    docker pull "$image" >&2
+  fi
+
+  pid=
+  trap '
+    if [[ $pid ]]; then
+      kill $pid || :
+    fi
+  ' SIGINT
+
+  if [[ ! ${QTTS_OUTFILE+x} ]]; then
+    (
+      cd "$tmpdir"
+      for ((i = 0; i < ${#input_lines[@]}; ++i)); do
+        while [[ ! -f $i.raw ]]; do
+          sleep 0.2
+        done
+        ffplay \
+          -loglevel fatal \
+          -nodisp \
+          -autoexit \
+          -f f32le \
+          -ar 24000 \
+          -ch_layout mono \
+          -i $i.raw \
+          >/dev/null \
+        ;
+      done
+    ) &
+    pid=$!
+  fi
+
+  pushd "$tmpdir" >/dev/null
+  for ((i = 0; i < ${#input_lines[@]}; ++i)); do
+    docker run \
+      $QTTS_DOCKER_GPUS \
+      --network none \
+      --rm \
+      --stop-timeout 0 \
+      -i \
+      "$image" \
+      python /main.py \
+      <<<"${input_lines[i]}" \
+      >$i.raw.tmp \
+      2>/dev/null \
+    ;
+    mv -f $i.raw.tmp $i.raw
+  done
+  popd >/dev/null
+
+  if [[ ${QTTS_OUTFILE+x} ]]; then
+    srcs=
+    for ((i = 0; i < ${#input_lines[@]}; ++i)); do
+      srcs+=" $i.raw"
+    done
+    pushd "$tmpdir" >/dev/null
+    dst=dst.${QTTS_OUTFILE##*/}
+    cat $srcs | ffmpeg \
+      -loglevel fatal \
+      -f f32le \
+      -ar 24000 \
+      -ch_layout mono \
+      -i - \
+      "$dst" \
+    ;
+    popd >/dev/null
+    mv -f "$tmpdir/$dst" "$QTTS_OUTFILE"
+  else
+    wait $pid
+  fi
+
+}; readonly -f run_dockerized_engine
+
+#-----------------------------------------------------------------------
 # chatterbox
 #-----------------------------------------------------------------------
 
@@ -387,84 +474,8 @@ fi
 
 if [[ ${QTTS_ENGINE-} == kitten || \
       ( ! ${QTTS_ENGINE+x} && $QTTS_HAVE_DOCKER == 1 ) ]]; then
-
-  : ${QTTS_KITTEN_IMAGE:=docker.io/quinngrier/qtts-kitten}
-
-  docker image inspect "$QTTS_KITTEN_IMAGE" >/dev/null && :
-  if (($? != 0)); then
-    docker pull "$QTTS_KITTEN_IMAGE" >&2
-  fi
-
-  pid=
-  trap '
-    if [[ $pid ]]; then
-      kill $pid || :
-    fi
-  ' SIGINT
-
-  if [[ ! ${QTTS_OUTFILE+x} ]]; then
-    (
-      cd "$tmpdir"
-      for ((i = 0; i < ${#input_lines[@]}; ++i)); do
-        while [[ ! -f $i.raw ]]; do
-          sleep 0.2
-        done
-        ffplay \
-          -loglevel fatal \
-          -nodisp \
-          -autoexit \
-          -f f32le \
-          -ar 24000 \
-          -ch_layout mono \
-          -i $i.raw \
-          >/dev/null \
-        ;
-      done
-    ) &
-    pid=$!
-  fi
-
-  pushd "$tmpdir" >/dev/null
-  for ((i = 0; i < ${#input_lines[@]}; ++i)); do
-    docker run \
-      $QTTS_DOCKER_GPUS \
-      --network none \
-      --rm \
-      --stop-timeout 0 \
-      -i \
-      "$QTTS_KITTEN_IMAGE" \
-      python /main.py \
-      <<<"${input_lines[i]}" \
-      >$i.raw.tmp \
-      2>/dev/null \
-    ;
-    mv -f $i.raw.tmp $i.raw
-  done
-  popd >/dev/null
-
-  if [[ ${QTTS_OUTFILE+x} ]]; then
-    srcs=
-    for ((i = 0; i < ${#input_lines[@]}; ++i)); do
-      srcs+=" $i.raw"
-    done
-    pushd "$tmpdir" >/dev/null
-    dst=dst.${QTTS_OUTFILE##*/}
-    cat $srcs | ffmpeg \
-      -loglevel fatal \
-      -f f32le \
-      -ar 24000 \
-      -ch_layout mono \
-      -i - \
-      "$dst" \
-    ;
-    popd >/dev/null
-    mv -f "$tmpdir/$dst" "$QTTS_OUTFILE"
-  else
-    wait $pid
-  fi
-
+  run_dockerized_engine kitten
   exit
-
 fi
 
 #-----------------------------------------------------------------------
@@ -472,84 +483,8 @@ fi
 #-----------------------------------------------------------------------
 
 if [[ ${QTTS_ENGINE-} == kokoro ]]; then
-
-  : ${QTTS_KOKORO_IMAGE:=docker.io/quinngrier/qtts-kokoro}
-
-  docker image inspect "$QTTS_KOKORO_IMAGE" >/dev/null && :
-  if (($? != 0)); then
-    docker pull "$QTTS_KOKORO_IMAGE" >&2
-  fi
-
-  pid=
-  trap '
-    if [[ $pid ]]; then
-      kill $pid || :
-    fi
-  ' SIGINT
-
-  if [[ ! ${QTTS_OUTFILE+x} ]]; then
-    (
-      cd "$tmpdir"
-      for ((i = 0; i < ${#input_lines[@]}; ++i)); do
-        while [[ ! -f $i.raw ]]; do
-          sleep 0.2
-        done
-        ffplay \
-          -loglevel fatal \
-          -nodisp \
-          -autoexit \
-          -f f32le \
-          -ar 24000 \
-          -ch_layout mono \
-          -i $i.raw \
-          >/dev/null \
-        ;
-      done
-    ) &
-    pid=$!
-  fi
-
-  pushd "$tmpdir" >/dev/null
-  for ((i = 0; i < ${#input_lines[@]}; ++i)); do
-    docker run \
-      $QTTS_DOCKER_GPUS \
-      --network none \
-      --rm \
-      --stop-timeout 0 \
-      -i \
-      "$QTTS_KOKORO_IMAGE" \
-      python /main.py \
-      <<<"${input_lines[i]}" \
-      >$i.raw.tmp \
-      2>/dev/null \
-    ;
-    mv -f $i.raw.tmp $i.raw
-  done
-  popd >/dev/null
-
-  if [[ ${QTTS_OUTFILE+x} ]]; then
-    srcs=
-    for ((i = 0; i < ${#input_lines[@]}; ++i)); do
-      srcs+=" $i.raw"
-    done
-    pushd "$tmpdir" >/dev/null
-    dst=dst.${QTTS_OUTFILE##*/}
-    cat $srcs | ffmpeg \
-      -loglevel fatal \
-      -f f32le \
-      -ar 24000 \
-      -ch_layout mono \
-      -i - \
-      "$dst" \
-    ;
-    popd >/dev/null
-    mv -f "$tmpdir/$dst" "$QTTS_OUTFILE"
-  else
-    wait $pid
-  fi
-
+  run_dockerized_engine kokoro
   exit
-
 fi
 
 #-----------------------------------------------------------------------
