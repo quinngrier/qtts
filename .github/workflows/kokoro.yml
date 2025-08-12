@@ -21,3 +21,4 @@ jobs:
     uses: ./.github/workflows/docker.yml
     with:
       engine: kokoro
+    secrets: inherit
