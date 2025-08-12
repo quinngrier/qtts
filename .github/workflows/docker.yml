@@ -81,7 +81,7 @@ jobs:
           tag=${{ needs.build_image.outputs.tag }}
           input="The quick brown fox jumped over the lazy dog."
           engine=${{ inputs.engine }}
-          export QTTS_KOKORO_IMAGE=$name:$tag-rc
+          eval export QTTS_${engine@U}_IMAGE=$name:$tag-rc
           ./qtts \
             --engine $engine \
             --output output.ogg \
