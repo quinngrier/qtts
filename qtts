@@ -26,7 +26,7 @@
 # QTTS_ENGINE environment variable to one of the engines detailed below.
 #
 # By default, the speech is played aloud using your sound card. To save
-# it to an audio file instead, set the QTTS_OUTFILE environment variable
+# it to an audio file instead, set the QTTS_OUTPUT environment variable
 # to a file path. The output file format will be inferred from the file
 # extension (.wav, .ogg, .m4a, etc).
 #
@@ -143,7 +143,7 @@ while (($# > 0)); do
     #-------------------------------------------------------------------
 
     ;; --output=*)
-      QTTS_OUTFILE=${1#*=}
+      QTTS_OUTPUT=${1#*=}
       shift
       continue
 
@@ -297,7 +297,7 @@ run_dockerized_engine() {
     fi
   ' SIGINT
 
-  if [[ ! ${QTTS_OUTFILE+x} ]]; then
+  if [[ ! ${QTTS_OUTPUT+x} ]]; then
     (
       cd "$tmpdir"
       for ((i = 0; i < ${#input_lines[@]}; ++i)); do
@@ -337,13 +337,13 @@ run_dockerized_engine() {
   done
   popd >/dev/null
 
-  if [[ ${QTTS_OUTFILE+x} ]]; then
+  if [[ ${QTTS_OUTPUT+x} ]]; then
     srcs=
     for ((i = 0; i < ${#input_lines[@]}; ++i)); do
       srcs+=" $i.raw"
     done
     pushd "$tmpdir" >/dev/null
-    dst=dst.${QTTS_OUTFILE##*/}
+    dst=dst.${QTTS_OUTPUT##*/}
     cat $srcs | ffmpeg \
       -loglevel fatal \
       -f f32le \
@@ -353,7 +353,7 @@ run_dockerized_engine() {
       "$dst" \
     ;
     popd >/dev/null
-    mv -f "$tmpdir/$dst" "$QTTS_OUTFILE"
+    mv -f "$tmpdir/$dst" "$QTTS_OUTPUT"
   else
     wait $pid
   fi
@@ -413,7 +413,7 @@ if [[ ${QTTS_ENGINE-} == chatterbox ]]; then
     fi
   ' SIGINT
 
-  if [[ ! ${QTTS_OUTFILE+x} ]]; then
+  if [[ ! ${QTTS_OUTPUT+x} ]]; then
     (
       cd "$tmpdir"
       for ((i = 0; i < ${#input_lines[@]}; ++i)); do
@@ -453,13 +453,13 @@ if [[ ${QTTS_ENGINE-} == chatterbox ]]; then
   done
   popd >/dev/null
 
-  if [[ ${QTTS_OUTFILE+x} ]]; then
+  if [[ ${QTTS_OUTPUT+x} ]]; then
     srcs=
     for ((i = 0; i < ${#input_lines[@]}; ++i)); do
       srcs+=" $i.raw"
     done
     pushd "$tmpdir" >/dev/null
-    dst=dst.${QTTS_OUTFILE##*/}
+    dst=dst.${QTTS_OUTPUT##*/}
     cat $srcs | ffmpeg \
       -loglevel fatal \
       -f f32le \
@@ -469,7 +469,7 @@ if [[ ${QTTS_ENGINE-} == chatterbox ]]; then
       "$dst" \
     ;
     popd >/dev/null
-    mv -f "$tmpdir/$dst" "$QTTS_OUTFILE"
+    mv -f "$tmpdir/$dst" "$QTTS_OUTPUT"
   else
     wait $pid
   fi
@@ -504,8 +504,8 @@ fi
 if [[ ${QTTS_ENGINE-} == dotnet || \
       ( ! ${QTTS_ENGINE+x} && ${WINDIR+x} ) ]]; then
 
-  if [[ ${QTTS_OUTFILE+x} ]]; then
-    printf '%s\n' "QTTS_OUTFILE is not supported for this engine yet." >&2
+  if [[ ${QTTS_OUTPUT+x} ]]; then
+    printf '%s\n' "QTTS_OUTPUT is not supported for this engine yet." >&2
     exit 1
   fi
 
