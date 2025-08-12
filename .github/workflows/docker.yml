@@ -1,0 +1,125 @@
+#
+# The authors of this file have waived all copyright and
+# related or neighboring rights to the extent permitted by
+# law as described by the CC0 1.0 Universal Public Domain
+# Dedication. You should have received a copy of the full
+# dedication along with this file, typically as a file
+# named <CC0-1.0.txt>. If not, it may be available at
+# <https://creativecommons.org/publicdomain/zero/1.0/>.
+#
+
+on:
+  workflow_call:
+    inputs:
+      engine:
+        required: true
+        type: string
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  # This job prevents Docker Hub from deleting our current image due to
+  # inactivity, in case we keep failing to build and push a new image
+  # for a long time.
+  keepalive_image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull current image
+        id: tag
+        run: |
+          set -E -e -o pipefail -u -x || exit $?
+          trap exit ERR
+          name=docker.io/quinngrier/qtts-${{ inputs.engine }}
+          docker pull $name
+
+  build_image:
+    needs: keepalive_image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Construct image tag
+        id: tag
+        run: |
+          set -E -e -o pipefail -u -x || exit $?
+          trap exit ERR
+          tag=$(date +%Y-%m-%d)-$GITHUB_RUN_ID
+          echo tag=$tag >>$GITHUB_OUTPUT
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - name: Build and push candidate image
+        uses: docker/build-push-action@v4
+        with:
+          context: ${{ inputs.engine }}
+          push: true
+          tags: docker.io/quinngrier/qtts-${{ inputs.engine }}:${{ steps.tag.outputs.tag }}-rc
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+
+  test_image:
+    needs: build_image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run test script
+        run: |
+          set -E -e -o pipefail -u -x || exit $?
+          trap exit ERR
+          export DEBIAN_FRONTEND=noninteractive
+          sudo apt-get -q -y update
+          sudo apt-get -q -y install ffmpeg
+          name=docker.io/quinngrier/qtts-${{ inputs.engine }}
+          tag=${{ needs.build_image.outputs.tag }}
+          input="The quick brown fox jumped over the lazy dog."
+          export QTTS_OUTFILE=output.ogg
+          export QTTS_ENGINE=${{ inputs.engine }}
+          export QTTS_KOKORO_IMAGE=$name:$tag-rc
+          ./qtts "$input"
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: output.ogg
+          path: output.ogg
+
+  push_image:
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - build_image
+      - test_image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - name: Pull candidate image
+        run: |
+          set -E -e -o pipefail -u -x || exit $?
+          trap exit ERR
+          name=docker.io/quinngrier/qtts-${{ inputs.engine }}
+          tag=${{ needs.build_image.outputs.tag }}
+          docker pull $name:$tag-rc
+      - name: Tag final images
+        run: |
+          set -E -e -o pipefail -u -x || exit $?
+          trap exit ERR
+          name=docker.io/quinngrier/qtts-${{ inputs.engine }}
+          tag=${{ needs.build_image.outputs.tag }}
+          docker tag $name:$tag-rc $name:$tag
+          docker tag $name:$tag-rc $name:latest
+      - name: Push final images
+        run: |
+          set -E -e -o pipefail -u -x || exit $?
+          trap exit ERR
+          name=docker.io/quinngrier/qtts-${{ inputs.engine }}
+          tag=${{ needs.build_image.outputs.tag }}
+          docker push $name:$tag
+          docker push $name:latest
