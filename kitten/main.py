@@ -8,6 +8,8 @@
 # <https://creativecommons.org/publicdomain/zero/1.0/>.
 #
 
+# TODO: Maybe don't need QTTS_INIT for this model.
+
 import os
 import sys
 import numpy as np
