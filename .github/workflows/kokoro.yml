@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  call_workflow:
+  docker:
     uses: quinngrier/qtts/.github/workflows/docker.yml@main
     with:
       engine: kokoro
