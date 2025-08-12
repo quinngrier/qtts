@@ -26,7 +26,7 @@ jobs:
   # This job prevents Docker Hub from deleting our current image due to
   # inactivity, in case we keep failing to build and push a new image
   # for a long time.
-  keepalive_image:
+  keepalive:
     runs-on: ubuntu-latest
     steps:
       - name: Pull current image
@@ -37,8 +37,8 @@ jobs:
           name=docker.io/quinngrier/qtts-${{ inputs.model }}
           docker pull $name
 
-  build_image:
-    needs: keepalive_image
+  build:
+    needs: keepalive
     runs-on: ubuntu-latest
     steps:
       - name: Construct image tag
@@ -64,8 +64,8 @@ jobs:
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
 
-  test_image:
-    needs: build_image
+  test:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -78,7 +78,7 @@ jobs:
           sudo apt-get -q -y update
           sudo apt-get -q -y install ffmpeg
           name=docker.io/quinngrier/qtts-${{ inputs.model }}
-          tag=${{ needs.build_image.outputs.tag }}
+          tag=${{ needs.build.outputs.tag }}
           input="The quick brown fox jumped over the lazy dog."
           model=${{ inputs.model }}
           eval export QTTS_${model@U}_IMAGE=$name:$tag-rc
@@ -93,11 +93,11 @@ jobs:
           name: output.ogg
           path: output.ogg
 
-  push_image:
+  push:
     if: github.ref == 'refs/heads/main'
     needs:
-      - build_image
-      - test_image
+      - build
+      - test
     runs-on: ubuntu-latest
     steps:
       - name: Log in to Docker Hub
@@ -110,14 +110,14 @@ jobs:
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
           name=docker.io/quinngrier/qtts-${{ inputs.model }}
-          tag=${{ needs.build_image.outputs.tag }}
+          tag=${{ needs.build.outputs.tag }}
           docker pull $name:$tag-rc
       - name: Tag final images
         run: |
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
           name=docker.io/quinngrier/qtts-${{ inputs.model }}
-          tag=${{ needs.build_image.outputs.tag }}
+          tag=${{ needs.build.outputs.tag }}
           docker tag $name:$tag-rc $name:$tag
           docker tag $name:$tag-rc $name:latest
       - name: Push final images
@@ -125,6 +125,6 @@ jobs:
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
           name=docker.io/quinngrier/qtts-${{ inputs.model }}
-          tag=${{ needs.build_image.outputs.tag }}
+          tag=${{ needs.build.outputs.tag }}
           docker push $name:$tag
           docker push $name:latest
