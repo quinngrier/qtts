@@ -12,6 +12,9 @@ name: kitten
 
 on:
   push:
+    paths:
+      - kitten/**
+      - !kitten/README.adoc
   schedule:
     - cron: 3 11 3 * *
   workflow_dispatch:
