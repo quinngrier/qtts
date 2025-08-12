@@ -1,2 +1,0 @@
-Push images to Docker Hub. Rebuilding them can take a while and the
-build processes probably aren't very stable.
