@@ -13,7 +13,7 @@ name: docker
 on:
   workflow_call:
     inputs:
-      engine:
+      model:
         required: true
         type: string
 
@@ -34,7 +34,7 @@ jobs:
         run: |
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
-          name=docker.io/quinngrier/qtts-${{ inputs.engine }}
+          name=docker.io/quinngrier/qtts-${{ inputs.model }}
           docker pull $name
 
   build_image:
@@ -58,9 +58,9 @@ jobs:
       - name: Build and push candidate image
         uses: docker/build-push-action@v4
         with:
-          context: ${{ inputs.engine }}
+          context: ${{ inputs.model }}
           push: true
-          tags: docker.io/quinngrier/qtts-${{ inputs.engine }}:${{ steps.tag.outputs.tag }}-rc
+          tags: docker.io/quinngrier/qtts-${{ inputs.model }}:${{ steps.tag.outputs.tag }}-rc
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
 
@@ -77,13 +77,13 @@ jobs:
           export DEBIAN_FRONTEND=noninteractive
           sudo apt-get -q -y update
           sudo apt-get -q -y install ffmpeg
-          name=docker.io/quinngrier/qtts-${{ inputs.engine }}
+          name=docker.io/quinngrier/qtts-${{ inputs.model }}
           tag=${{ needs.build_image.outputs.tag }}
           input="The quick brown fox jumped over the lazy dog."
-          engine=${{ inputs.engine }}
-          eval export QTTS_${engine@U}_IMAGE=$name:$tag-rc
+          model=${{ inputs.model }}
+          eval export QTTS_${model@U}_IMAGE=$name:$tag-rc
           ./qtts \
-            --engine $engine \
+            --model $model \
             --output output.ogg \
             "$input" \
           ;
@@ -109,14 +109,14 @@ jobs:
         run: |
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
-          name=docker.io/quinngrier/qtts-${{ inputs.engine }}
+          name=docker.io/quinngrier/qtts-${{ inputs.model }}
           tag=${{ needs.build_image.outputs.tag }}
           docker pull $name:$tag-rc
       - name: Tag final images
         run: |
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
-          name=docker.io/quinngrier/qtts-${{ inputs.engine }}
+          name=docker.io/quinngrier/qtts-${{ inputs.model }}
           tag=${{ needs.build_image.outputs.tag }}
           docker tag $name:$tag-rc $name:$tag
           docker tag $name:$tag-rc $name:latest
@@ -124,7 +124,7 @@ jobs:
         run: |
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
-          name=docker.io/quinngrier/qtts-${{ inputs.engine }}
+          name=docker.io/quinngrier/qtts-${{ inputs.model }}
           tag=${{ needs.build_image.outputs.tag }}
           docker push $name:$tag
           docker push $name:latest

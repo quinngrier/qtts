@@ -22,21 +22,21 @@
 # standard input.
 #
 # By default, this script will try to find and use the best text to
-# speech engine you have available. To use a specific engine, set the
-# QTTS_ENGINE environment variable to one of the engines detailed below.
+# speech model you have available. To use a specific model, set the
+# QTTS_MODEL environment variable to one of the models detailed below.
 #
 # By default, the speech is played aloud using your sound card. To save
 # it to an audio file instead, set the QTTS_OUTPUT environment variable
 # to a file path. The output file format will be inferred from the file
 # extension (.wav, .ogg, .m4a, etc).
 #
-# Unless otherwise stated, all engines are run locally inside a Docker
+# Unless otherwise stated, all models are run locally inside a Docker
 # container with internet access disabled. However, the first time you
-# use such an engine, it may need to run a one-time build process that
+# use such an model, it may need to run a one-time build process that
 # accesses the internet. This one-time build process will never leak
 # your input, though.
 #
-# The supported engines are as follows:
+# The supported models are as follows:
 #
 #    chatterbox
 #
@@ -47,12 +47,12 @@
 #       This is the SpeechSynthesizer class from .NET, run
 #       directly on your host machine using PowerShell.
 #
-#       It's unlikely that this engine will ever access the
+#       It's unlikely that this model will ever access the
 #       internet, but it's still just a .NET call on your host
 #       machine. Use at your own risk.
 #
-#       If you're on Windows and don't have QTTS_ENGINE set, this
-#       engine will always be tried as a last resort.
+#       If you're on Windows and don't have QTTS_MODEL set, this
+#       model will always be tried as a last resort.
 #
 #    kokoro
 #
@@ -113,7 +113,7 @@ trap '
 #-----------------------------------------------------------------------
 
 declare -A -r short_to_long=(
-  [-e]=--engine
+  [-e]=--model
   [-o]=--output
 )
 
@@ -130,11 +130,11 @@ while (($# > 0)); do
       continue
 
     #-------------------------------------------------------------------
-    # --engine=<name>, -e <name>
+    # --model=<name>, -e <name>
     #-------------------------------------------------------------------
 
-    ;; --engine=*)
-      QTTS_ENGINE=${1#*=}
+    ;; --model=*)
+      QTTS_MODEL=${1#*=}
       shift
       continue
 
@@ -151,7 +151,7 @@ while (($# > 0)); do
     # Adjust --foo bar to --foo=bar
     #-------------------------------------------------------------------
 
-    ;; --engine | --output)
+    ;; --model | --output)
       if (($# < 2)); then
         printf '%s\n' "$0: $1 requires an argument" >&2
         exit 1
@@ -212,9 +212,9 @@ if [[ ! ${input_lines+x} ]]; then
 fi
 
 #
-# Some engines pause on newlines or can't handle long input very well.
+# Some models pause on newlines or can't handle long input very well.
 # To fix this, we join each run of nonempty lines into a single line and
-# parse the resulting lines into an array to feed into the engine one at
+# parse the resulting lines into an array to feed into the model one at
 # a time. We also remove comment leaders like # and //.
 #
 
@@ -275,14 +275,14 @@ readonly QTTS_DOCKER_GPUS
 
 #-----------------------------------------------------------------------
 
-run_dockerized_engine() {
+run_dockerized_model() {
 
-  local -r engine=$1
+  local -r model=$1
 
-  local -n image=QTTS_${engine@U}_IMAGE
+  local -n image=QTTS_${model@U}_IMAGE
 
   if [[ ! ${image+x} ]]; then
-    image=docker.io/quinngrier/qtts-$engine
+    image=docker.io/quinngrier/qtts-$model
   fi
 
   docker image inspect "$image" >/dev/null && :
@@ -358,16 +358,16 @@ run_dockerized_engine() {
     wait $pid
   fi
 
-}; readonly -f run_dockerized_engine
+}; readonly -f run_dockerized_model
 
 #-----------------------------------------------------------------------
 # chatterbox
 #-----------------------------------------------------------------------
 
-if [[ ${QTTS_ENGINE-} == chatterbox ]]; then
+if [[ ${QTTS_MODEL-} == chatterbox ]]; then
 
   if [[ ! $QTTS_DOCKER_GPUS ]]; then
-    printf '%s\n' "$0: QTTS_ENGINE=chatterbox requires QTTS_DOCKER_GPUS." >&2
+    printf '%s\n' "$0: QTTS_MODEL=chatterbox requires QTTS_DOCKER_GPUS." >&2
     exit 1
   fi
 
@@ -482,9 +482,9 @@ fi
 # kitten
 #-----------------------------------------------------------------------
 
-if [[ ${QTTS_ENGINE-} == kitten || \
-      ( ! ${QTTS_ENGINE+x} && $QTTS_HAVE_DOCKER == 1 ) ]]; then
-  run_dockerized_engine kitten
+if [[ ${QTTS_MODEL-} == kitten || \
+      ( ! ${QTTS_MODEL+x} && $QTTS_HAVE_DOCKER == 1 ) ]]; then
+  run_dockerized_model kitten
   exit
 fi
 
@@ -492,8 +492,8 @@ fi
 # kokoro
 #-----------------------------------------------------------------------
 
-if [[ ${QTTS_ENGINE-} == kokoro ]]; then
-  run_dockerized_engine kokoro
+if [[ ${QTTS_MODEL-} == kokoro ]]; then
+  run_dockerized_model kokoro
   exit
 fi
 
@@ -501,11 +501,11 @@ fi
 # .NET
 #-----------------------------------------------------------------------
 
-if [[ ${QTTS_ENGINE-} == dotnet || \
-      ( ! ${QTTS_ENGINE+x} && ${WINDIR+x} ) ]]; then
+if [[ ${QTTS_MODEL-} == dotnet || \
+      ( ! ${QTTS_MODEL+x} && ${WINDIR+x} ) ]]; then
 
   if [[ ${QTTS_OUTPUT+x} ]]; then
-    printf '%s\n' "QTTS_OUTPUT is not supported for this engine yet." >&2
+    printf '%s\n' "QTTS_OUTPUT is not supported for this model yet." >&2
     exit 1
   fi
 
@@ -543,5 +543,5 @@ fi
 
 #-----------------------------------------------------------------------
 
-printf '%s\n' "No text to speech engine found." >&2
+printf '%s\n' "No text to speech model found." >&2
 exit 1
