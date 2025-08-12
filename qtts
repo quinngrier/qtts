@@ -11,6 +11,8 @@
 #
 
 #
+# TODO: This doc is old. Remove it after it's completely obsolete.
+#
 # Usage: qtts [<word>...]
 #
 # Converts text to speech.
