@@ -269,7 +269,7 @@ run_dockerized_engine() {
 
   local -r engine=$1
 
-  local -n image=QTTS_${engine^^}_IMAGE
+  local -n image=QTTS_${engine@U}_IMAGE
 
   if [[ ! ${image+x} ]]; then
     image=docker.io/quinngrier/qtts-$engine
