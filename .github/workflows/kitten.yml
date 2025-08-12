@@ -18,6 +18,6 @@ on:
 
 jobs:
   docker:
-    uses: ./.github/workflows/docker.yml@main
+    uses: ./.github/workflows/docker.yml
     with:
       engine: kitten
