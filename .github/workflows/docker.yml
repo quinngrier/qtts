@@ -80,10 +80,12 @@ jobs:
           name=docker.io/quinngrier/qtts-${{ inputs.engine }}
           tag=${{ needs.build_image.outputs.tag }}
           input="The quick brown fox jumped over the lazy dog."
-          export QTTS_OUTFILE=output.ogg
           export QTTS_ENGINE=${{ inputs.engine }}
           export QTTS_KOKORO_IMAGE=$name:$tag-rc
-          ./qtts "$input"
+          ./qtts \
+            --output output.ogg \
+            "$input" \
+          ;
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
