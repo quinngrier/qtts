@@ -13,7 +13,7 @@ name: kokoro
 on:
   push:
   schedule:
-    - cron: 0 0 23 * *
+    - cron: 25 19 6 * *
   workflow_dispatch:
 
 jobs:
