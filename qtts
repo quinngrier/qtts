@@ -10,8 +10,6 @@
 # <https://creativecommons.org/publicdomain/zero/1.0/>.
 #
 
-# TODO: Some models have almost identical code. Refactor.
-
 #
 # Usage: qtts [<word>...]
 #
