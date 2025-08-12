@@ -36,6 +36,12 @@ ifdef::x_manpage[]
 :x_opt_output_name: pass:n[**--output**]
 :x_opt_output_name_arg: pass:n[**--output=**<__file__>]
 :x_opt_terminator: pass:n[**--**]
+:x_opt_v_arg: pass:n[<__voice__>]
+:x_opt_v_name: pass:n[**-v**]
+:x_opt_v_name_arg: pass:n[**-v**{nbsp}<__voice__>]
+:x_opt_voice_arg: pass:n[<__voice__>]
+:x_opt_voice_name: pass:n[**--voice**]
+:x_opt_voice_name_arg: pass:n[**--voice=**<__voice__>]
 :x_qtts: pass:n[**qtts**]
 :x_qtts_option: pass:n[<__option__>]
 :x_qtts_word: pass:n[<__word__>]
@@ -67,6 +73,12 @@ ifndef::x_manpage[]
 :x_opt_output_name: pass:n[``--output``]
 :x_opt_output_name_arg: pass:n[``--output=<file>``]
 :x_opt_terminator: pass:n[``--``]
+:x_opt_v_arg: pass:n[``<voice>``]
+:x_opt_v_name: pass:n[``-v``]
+:x_opt_v_name_arg: pass:n[``-v{nbsp}<voice>``]
+:x_opt_voice_arg: pass:n[``<voice>``]
+:x_opt_voice_name: pass:n[``--voice``]
+:x_opt_voice_name_arg: pass:n[``--voice=<voice>``]
 :x_qtts: pass:n[``qtts``]
 :x_qtts_option: pass:n[``<option>``]
 :x_qtts_word: pass:n[``<word>``]
@@ -127,6 +139,11 @@ instead of automatically picking an model.
 
 {x_opt_output_name_arg}, {x_opt_o_name_arg}:: Save the output to
 {x_opt_output_arg} instead of playing it.
+
+{x_opt_voice_name_arg}, {x_opt_v_name_arg}:: Use {x_opt_voice_arg}
+instead of the default voice.
++
+Not supported by all models.
 
 == Environment variables
 

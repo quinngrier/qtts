@@ -22,9 +22,11 @@ else:
   stdout = sys.stdout
   sys.stdout = open(os.devnull, "w")
 
+QTTS_VOICE = os.getenv("QTTS_VOICE", "af_heart")
+
 pipeline = KPipeline(lang_code="a")
 
-generator = pipeline(input, speed=1.25, voice="af_heart")
+generator = pipeline(input, speed=1.25, voice=QTTS_VOICE)
 
 for i, (gs, ps, audio) in enumerate(generator):
   if not init:

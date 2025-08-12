@@ -115,6 +115,7 @@ trap '
 declare -A -r short_to_long=(
   [-m]=--model
   [-o]=--output
+  [-v]=--voice
 )
 
 parse_options=1
@@ -148,10 +149,23 @@ while (($# > 0)); do
       continue
 
     #-------------------------------------------------------------------
+    # --voice=<voice>, -v <voice>
+    #-------------------------------------------------------------------
+
+    ;; --voice=*)
+      QTTS_VOICE=${1#*=}
+      shift
+      continue
+
+    #-------------------------------------------------------------------
     # Adjust --foo bar to --foo=bar
     #-------------------------------------------------------------------
 
-    ;; --model | --output)
+    ;; -- \
+      | --model \
+      | --output \
+      | --voice \
+    )
       if (($# < 2)); then
         printf '%s\n' "$0: $1 requires an argument" >&2
         exit 1
@@ -165,7 +179,7 @@ while (($# > 0)); do
     # Adjust -f bar to --foo=bar
     #-------------------------------------------------------------------
 
-    ;; -[mo])
+    ;; -[mov])
       if (($# < 2)); then
         printf '%s\n' "$0: $1 requires an argument" >&2
         exit 1
@@ -179,7 +193,7 @@ while (($# > 0)); do
     # Adjust -fbar to --foo=bar
     #-------------------------------------------------------------------
 
-    ;; -[mo]?*)
+    ;; -[mov]?*)
       x=${short_to_long[${1:0:2}]}=${1:2}
       shift
       set -- "$x" "$@"
@@ -327,6 +341,7 @@ run_dockerized_model() {
       --rm \
       --stop-timeout 0 \
       -i \
+      ${QTTS_VOICE+-e QTTS_VOICE="$QTTS_VOICE"} \
       "$image" \
       python /main.py \
       <<<"${input_lines[i]}" \
