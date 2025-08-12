@@ -10,6 +10,8 @@
 # <https://creativecommons.org/publicdomain/zero/1.0/>.
 #
 
+# TODO: Some models have almost identical code. Refactor.
+
 #
 # Usage: qtts [<word>...]
 #
@@ -380,11 +382,96 @@ if [[ ${QTTS_ENGINE-} == chatterbox ]]; then
 fi
 
 #-----------------------------------------------------------------------
+# kitten
+#-----------------------------------------------------------------------
+
+if [[ ${QTTS_ENGINE-} == kitten || \
+      ( ! ${QTTS_ENGINE+x} && $QTTS_HAVE_DOCKER == 1 ) ]]; then
+
+  : ${QTTS_KITTEN_IMAGE:=docker.io/quinngrier/qtts-kitten}
+
+  docker image inspect "$QTTS_KITTEN_IMAGE" >/dev/null && :
+  if (($? != 0)); then
+    docker pull "$QTTS_KITTEN_IMAGE" >&2
+  fi
+
+  pid=
+  trap '
+    if [[ $pid ]]; then
+      kill $pid || :
+    fi
+  ' SIGINT
+
+  if [[ ! ${QTTS_OUTFILE+x} ]]; then
+    (
+      cd "$tmpdir"
+      for ((i = 0; i < ${#input_lines[@]}; ++i)); do
+        while [[ ! -f $i.raw ]]; do
+          sleep 0.2
+        done
+        ffplay \
+          -loglevel fatal \
+          -nodisp \
+          -autoexit \
+          -f f32le \
+          -ar 24000 \
+          -ch_layout mono \
+          -i $i.raw \
+          >/dev/null \
+        ;
+      done
+    ) &
+    pid=$!
+  fi
+
+  pushd "$tmpdir" >/dev/null
+  for ((i = 0; i < ${#input_lines[@]}; ++i)); do
+    docker run \
+      $QTTS_DOCKER_GPUS \
+      --network none \
+      --rm \
+      --stop-timeout 0 \
+      -i \
+      "$QTTS_KITTEN_IMAGE" \
+      python /main.py \
+      <<<"${input_lines[i]}" \
+      >$i.raw.tmp \
+      2>/dev/null \
+    ;
+    mv -f $i.raw.tmp $i.raw
+  done
+  popd >/dev/null
+
+  if [[ ${QTTS_OUTFILE+x} ]]; then
+    srcs=
+    for ((i = 0; i < ${#input_lines[@]}; ++i)); do
+      srcs+=" $i.raw"
+    done
+    pushd "$tmpdir" >/dev/null
+    dst=dst.${QTTS_OUTFILE##*/}
+    cat $srcs | ffmpeg \
+      -loglevel fatal \
+      -f f32le \
+      -ar 24000 \
+      -ch_layout mono \
+      -i - \
+      "$dst" \
+    ;
+    popd >/dev/null
+    mv -f "$tmpdir/$dst" "$QTTS_OUTFILE"
+  else
+    wait $pid
+  fi
+
+  exit
+
+fi
+
+#-----------------------------------------------------------------------
 # kokoro
 #-----------------------------------------------------------------------
 
-if [[ ${QTTS_ENGINE-} == kokoro || \
-      ( ! ${QTTS_ENGINE+x} && $QTTS_HAVE_DOCKER == 1 ) ]]; then
+if [[ ${QTTS_ENGINE-} == kokoro ]]; then
 
   : ${QTTS_KOKORO_IMAGE:=docker.io/quinngrier/qtts-kokoro}
 
