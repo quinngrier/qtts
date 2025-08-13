@@ -13,9 +13,9 @@ name: kokoro
 on:
   push:
     paths:
-      - kokoro/**
-      - "!kokoro/README.adoc"
-      - "!kokoro/README.adoc.bash"
+      - models/kokoro/**
+      - "!models/kokoro/README.adoc"
+      - "!models/kokoro/README.adoc.bash"
   schedule:
     - cron: 25 19 6 * *
   workflow_dispatch:
