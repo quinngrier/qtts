@@ -15,14 +15,15 @@ import sys
 import numpy as np
 from kittentts import KittenTTS
 
-init = "QTTS_INIT" in os.environ
+if "QTTS_INIT" in os.environ:
+  m = KittenTTS("KittenML/kitten-tts-nano-0.1")
+  m.generate("hello", voice="expr-voice-2-f")
+  sys.exit(0)
 
-if init:
-  input = "hello"
-else:
-  input = sys.stdin.read()
-  stdout = sys.stdout
-  sys.stdout = open(os.devnull, "w")
+stdout = sys.stdout
+sys.stdout = open(os.devnull, "w")
+
+input = sys.stdin.read()
 
 QTTS_VOICE = os.getenv("QTTS_VOICE", "expr-voice-2-f")
 
@@ -31,5 +32,4 @@ m = KittenTTS("KittenML/kitten-tts-nano-0.1")
 audio = m.generate(input, voice=QTTS_VOICE)
 audio = np.asarray(audio, dtype=np.float32)
 audio = audio.tobytes()
-if not init:
-  stdout.buffer.write(audio)
+stdout.buffer.write(audio)
