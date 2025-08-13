@@ -38,8 +38,7 @@ it in your `PATH`.
 
 == Models
 
-* link:kitten/README.adoc[`qtts --model kitten`]
-
-* link:kokoro/README.adoc[`qtts --model kokoro`]
+link:kitten/README.adoc[`kitten`]
+link:kokoro/README.adoc[`kokoro`]
 
 //
