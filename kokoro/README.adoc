@@ -21,23 +21,25 @@ if needed, then runs completely locally via
 
 == Voices
 
-* `af_alloy`
-* `af_aoede`
-* `af_bella`
-* `af_heart` (default)
-* `af_jessica`
-* `af_kore`
-* `af_nicole`
-* `af_nova`
-* `af_river`
-* `af_sarah`
-* `af_sky`
-* `am_adam`
-* `am_echo`
-* `am_eric`
-* `am_fenrir`
-* `am_liam`
-* `am_michael`
-* `am_onyx`
-* `am_puck`
-* `am_santa`
+// begin_voices_list
+* `af_alloy`: American English
+* `af_aoede`: American English
+* `af_bella`: American English
+* `af_heart` (default): American English
+* `af_jessica`: American English
+* `af_kore`: American English
+* `af_nicole`: American English
+* `af_nova`: American English
+* `af_river`: American English
+* `af_sarah`: American English
+* `af_sky`: American English
+* `am_adam`: American English
+* `am_echo`: American English
+* `am_eric`: American English
+* `am_fenrir`: American English
+* `am_liam`: American English
+* `am_michael`: American English
+* `am_onyx`: American English
+* `am_puck`: American English
+* `am_santa`: American English
+// end_voices_list

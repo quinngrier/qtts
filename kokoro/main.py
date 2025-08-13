@@ -10,26 +10,35 @@
 
 import os
 import sys
+import pyjson5
 import numpy as np
 from kokoro import KPipeline
 
-init = "QTTS_INIT" in os.environ
+with open("/voices.json5", "r") as f:
+  voices = pyjson5.decode_io(f)
+for name, voice in voices.items():
+  voice["name"] = name
 
-if init:
-  input = "hello"
-else:
-  input = sys.stdin.read()
-  stdout = sys.stdout
-  sys.stdout = open(os.devnull, "w")
+if "QTTS_INIT" in os.environ:
+  for voice in voices.values():
+    pipeline = KPipeline(lang_code=voice["lang_code"])
+    generator = pipeline("hello", voice=voice["name"])
+    for i, (gs, ps, audio) in enumerate(generator):
+      pass
+  sys.exit(0)
+
+input = sys.stdin.read()
+stdout = sys.stdout
+sys.stdout = open(os.devnull, "w")
 
 QTTS_VOICE = os.getenv("QTTS_VOICE", "af_heart")
+voice = voices[QTTS_VOICE]
 
-pipeline = KPipeline(lang_code="a")
+pipeline = KPipeline(lang_code=voice["lang_code"])
 
-generator = pipeline(input, speed=1.25, voice=QTTS_VOICE)
+generator = pipeline(input, speed=1.25, voice=voice["name"])
 
 for i, (gs, ps, audio) in enumerate(generator):
-  if not init:
-    audio = np.asarray(audio, dtype=np.float32)
-    audio = audio.tobytes()
-    stdout.buffer.write(audio)
+  audio = np.asarray(audio, dtype=np.float32)
+  audio = audio.tobytes()
+  stdout.buffer.write(audio)

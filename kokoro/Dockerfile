@@ -20,8 +20,12 @@ RUN : \
 RUN pip install \
   kokoro==0.9.4 \
   numpy \
+  pyjson5 \
 ;
 
-COPY main.py /
+COPY \
+  main.py \
+  voices.json5 \
+/
 
 RUN QTTS_INIT= python /main.py
