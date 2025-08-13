@@ -346,7 +346,6 @@ run_dockerized_model() {
       python /main.py \
       <<<"${input_lines[i]}" \
       >$i.raw.tmp \
-      2>/dev/null \
     ;
     mv -f $i.raw.tmp $i.raw
   done
