@@ -10,6 +10,7 @@
 
 import os
 import sys
+import traceback
 import pyjson5
 import numpy as np
 from kokoro import KPipeline
@@ -31,19 +32,26 @@ if "QTTS_INIT" in os.environ:
 stdout = sys.stdout
 sys.stdout = open(os.devnull, "w")
 
-input = sys.stdin.read()
+stderr = sys.stderr
+sys.stderr = open(os.devnull, "w")
 
-QTTS_VOICE = os.getenv("QTTS_VOICE")
-if QTTS_VOICE is None:
-  xs = [x for x in voices.values() if x.get("default") is True]
-  QTTS_VOICE = xs[0]["name"]
-voice = voices[QTTS_VOICE]
+try:
+  input = sys.stdin.read()
 
-pipeline = KPipeline(lang_code=voice["lang_code"])
+  QTTS_VOICE = os.getenv("QTTS_VOICE")
+  if QTTS_VOICE is None:
+    xs = [x for x in voices.values() if x.get("default") is True]
+    QTTS_VOICE = xs[0]["name"]
+  voice = voices[QTTS_VOICE]
 
-generator = pipeline(input, speed=1.25, voice=voice["name"])
+  pipeline = KPipeline(lang_code=voice["lang_code"])
 
-for i, (gs, ps, audio) in enumerate(generator):
-  audio = np.asarray(audio, dtype=np.float32)
-  audio = audio.tobytes()
-  stdout.buffer.write(audio)
+  generator = pipeline(input, speed=1.25, voice=voice["name"])
+
+  for i, (gs, ps, audio) in enumerate(generator):
+    audio = np.asarray(audio, dtype=np.float32)
+    audio = audio.tobytes()
+    stdout.buffer.write(audio)
+except Exception:
+  traceback.print_exc(file=stderr)
+  sys.exit(1)

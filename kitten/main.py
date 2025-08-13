@@ -12,6 +12,7 @@
 
 import os
 import sys
+import traceback
 import numpy as np
 from kittentts import KittenTTS
 
@@ -23,13 +24,20 @@ if "QTTS_INIT" in os.environ:
 stdout = sys.stdout
 sys.stdout = open(os.devnull, "w")
 
-input = sys.stdin.read()
+stderr = sys.stderr
+sys.stderr = open(os.devnull, "w")
 
-QTTS_VOICE = os.getenv("QTTS_VOICE", "expr-voice-2-f")
+try:
+  input = sys.stdin.read()
 
-m = KittenTTS("KittenML/kitten-tts-nano-0.1")
+  QTTS_VOICE = os.getenv("QTTS_VOICE", "expr-voice-2-f")
 
-audio = m.generate(input, voice=QTTS_VOICE)
-audio = np.asarray(audio, dtype=np.float32)
-audio = audio.tobytes()
-stdout.buffer.write(audio)
+  m = KittenTTS("KittenML/kitten-tts-nano-0.1")
+
+  audio = m.generate(input, voice=QTTS_VOICE)
+  audio = np.asarray(audio, dtype=np.float32)
+  audio = audio.tobytes()
+  stdout.buffer.write(audio)
+except Exception:
+  traceback.print_exc(file=stderr)
+  sys.exit(1)
