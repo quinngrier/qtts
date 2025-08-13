@@ -28,9 +28,10 @@ if "QTTS_INIT" in os.environ:
       pass
   sys.exit(0)
 
-input = sys.stdin.read()
 stdout = sys.stdout
 sys.stdout = open(os.devnull, "w")
+
+input = sys.stdin.read()
 
 QTTS_VOICE = os.getenv("QTTS_VOICE")
 if QTTS_VOICE is None:
