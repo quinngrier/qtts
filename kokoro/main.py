@@ -21,6 +21,7 @@ for name, voice in voices.items():
 
 if "QTTS_INIT" in os.environ:
   for voice in voices.values():
+    print("Initializing voice: " + voice["name"])
     pipeline = KPipeline(lang_code=voice["lang_code"])
     generator = pipeline("hello", voice=voice["name"])
     for i, (gs, ps, audio) in enumerate(generator):

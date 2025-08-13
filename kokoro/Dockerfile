@@ -18,10 +18,20 @@ RUN : \
 ;
 
 RUN pip install \
+  cn2an \
+  fugashi\[unidic\] \
+  jaconv \
+  jieba \
   kokoro==0.9.4 \
+  mojimoji \
   numpy \
+  ordered_set \
   pyjson5 \
+  pyopenjtalk \
+  pypinyin \
 ;
+
+RUN python -m unidic download
 
 COPY \
   main.py \
