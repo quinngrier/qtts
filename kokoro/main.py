@@ -31,7 +31,10 @@ input = sys.stdin.read()
 stdout = sys.stdout
 sys.stdout = open(os.devnull, "w")
 
-QTTS_VOICE = os.getenv("QTTS_VOICE", "af_heart")
+QTTS_VOICE = os.getenv("QTTS_VOICE")
+if QTTS_VOICE is None:
+  xs = [x for x in voices.values() if x.get("default") is True]
+  QTTS_VOICE = xs[0]["name"]
 voice = voices[QTTS_VOICE]
 
 pipeline = KPipeline(lang_code=voice["lang_code"])
