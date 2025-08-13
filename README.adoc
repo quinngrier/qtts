@@ -36,4 +36,10 @@ it in your `PATH`.
 
 . For more advanced usage, see the link:{x_man_page_url}[man page].
 
+== Models
+
+* link:kitten/README.adoc[`qtts --model kitten`]
+
+* link:kokoro/README.adoc[`qtts --model kokoro`]
+
 //
