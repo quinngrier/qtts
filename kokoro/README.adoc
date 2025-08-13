@@ -42,4 +42,38 @@ if needed, then runs completely locally via
 * `am_onyx`: American English
 * `am_puck`: American English
 * `am_santa`: American English
+* `bf_alice`: British English
+* `bf_emma`: British English
+* `bf_isabella`: British English
+* `bf_lily`: British English
+* `bm_daniel`: British English
+* `bm_fable`: British English
+* `bm_george`: British English
+* `bm_lewis`: British English
+* `ef_dora`: Spanish
+* `em_alex`: Spanish
+* `em_santa`: Spanish
+* `ff_siwis`: French
+* `hf_alpha`: Hindi
+* `hf_beta`: Hindi
+* `hm_omega`: Hindi
+* `hm_psi`: Hindi
+* `if_sara`: Italian
+* `im_nicola`: Italian
+* `jf_alpha`: Japanese
+* `jf_gongitsune`: Japanese
+* `jf_nezumi`: Japanese
+* `jf_tebukuro`: Japanese
+* `jm_kumo`: Japanese
+* `pf_dora`: Brazilian Portuguese
+* `pm_alex`: Brazilian Portuguese
+* `pm_santa`: Brazilian Portuguese
+* `zf_xiaobei`: Mandarin Chinese
+* `zf_xiaoni`: Mandarin Chinese
+* `zf_xiaoxiao`: Mandarin Chinese
+* `zf_xiaoyi`: Mandarin Chinese
+* `zm_yunjian`: Mandarin Chinese
+* `zm_yunxi`: Mandarin Chinese
+* `zm_yunxia`: Mandarin Chinese
+* `zm_yunyang`: Mandarin Chinese
 // end_voices_list

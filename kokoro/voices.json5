@@ -69,5 +69,107 @@
   },
   "am_santa": {
     "lang_code": "a"
+  },
+  "bf_alice": {
+    "lang_code": "b"
+  },
+  "bf_emma": {
+    "lang_code": "b"
+  },
+  "bf_isabella": {
+    "lang_code": "b"
+  },
+  "bf_lily": {
+    "lang_code": "b"
+  },
+  "bm_daniel": {
+    "lang_code": "b"
+  },
+  "bm_fable": {
+    "lang_code": "b"
+  },
+  "bm_george": {
+    "lang_code": "b"
+  },
+  "bm_lewis": {
+    "lang_code": "b"
+  },
+  "ef_dora": {
+    "lang_code": "e"
+  },
+  "em_alex": {
+    "lang_code": "e"
+  },
+  "em_santa": {
+    "lang_code": "e"
+  },
+  "ff_siwis": {
+    "lang_code": "f"
+  },
+  "hf_alpha": {
+    "lang_code": "h"
+  },
+  "hf_beta": {
+    "lang_code": "h"
+  },
+  "hm_omega": {
+    "lang_code": "h"
+  },
+  "hm_psi": {
+    "lang_code": "h"
+  },
+  "if_sara": {
+    "lang_code": "i"
+  },
+  "im_nicola": {
+    "lang_code": "i"
+  },
+  "jf_alpha": {
+    "lang_code": "j"
+  },
+  "jf_gongitsune": {
+    "lang_code": "j"
+  },
+  "jf_nezumi": {
+    "lang_code": "j"
+  },
+  "jf_tebukuro": {
+    "lang_code": "j"
+  },
+  "jm_kumo": {
+    "lang_code": "j"
+  },
+  "pf_dora": {
+    "lang_code": "p"
+  },
+  "pm_alex": {
+    "lang_code": "p"
+  },
+  "pm_santa": {
+    "lang_code": "p"
+  },
+  "zf_xiaobei": {
+    "lang_code": "z"
+  },
+  "zf_xiaoni": {
+    "lang_code": "z"
+  },
+  "zf_xiaoxiao": {
+    "lang_code": "z"
+  },
+  "zf_xiaoyi": {
+    "lang_code": "z"
+  },
+  "zm_yunjian": {
+    "lang_code": "z"
+  },
+  "zm_yunxi": {
+    "lang_code": "z"
+  },
+  "zm_yunxia": {
+    "lang_code": "z"
+  },
+  "zm_yunyang": {
+    "lang_code": "z"
   }
 }

@@ -30,6 +30,14 @@ voices_list=$(
         + ": "
         + (.value.lang_code | if false then ""
            elif . == "a" then "American English"
+           elif . == "b" then "British English"
+           elif . == "e" then "Spanish"
+           elif . == "f" then "French"
+           elif . == "h" then "Hindi"
+           elif . == "i" then "Italian"
+           elif . == "j" then "Japanese"
+           elif . == "p" then "Brazilian Portuguese"
+           elif . == "z" then "Mandarin Chinese"
            else error end)
       )
     | join("\n")
