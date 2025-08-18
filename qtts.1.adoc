@@ -91,17 +91,19 @@ ifndef::x_manpage[]
 
 endif::[]
 
+:x_qtts_tagline: Convert text to speech
+
 :x_subs_normal: attributes,specialchars,quotes,replacements,macros,post_replacements
 :x_subs_source: attributes,specialchars,quotes,macros
 
 == Name
 
 ifdef::x_manpage[]
-qtts - Convert text to speech
+qtts - {x_qtts_tagline}
 endif::[]
 
 ifndef::x_manpage[]
-{x_qtts} &#x2014; Convert text to speech
+{x_qtts} &#x2014; {x_qtts_tagline}
 endif::[]
 
 == Synopsis
