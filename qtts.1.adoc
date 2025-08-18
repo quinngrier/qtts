@@ -91,7 +91,7 @@ ifndef::x_manpage[]
 
 endif::[]
 
-:x_qtts_tagline: Convert text to speech
+:x_qtts_tagline: Text-to-speech CLI wrapper
 
 :x_subs_normal: attributes,specialchars,quotes,replacements,macros,post_replacements
 :x_subs_source: attributes,specialchars,quotes,macros
