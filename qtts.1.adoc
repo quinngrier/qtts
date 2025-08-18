@@ -133,8 +133,8 @@ bundled with a subsequent short option or short option bundle
 {x_short_option_2b} by writing {x_short_option_2c} instead of
 {x_short_option_2d}.
 
-{x_opt_terminator}:: All further arguments will be taken as
-{x_qtts_word}s instead of possibly being taken as {x_qtts_option}s.
+{x_opt_terminator}:: All further arguments will be taken as operands
+instead of possibly being taken as {x_qtts_option}s.
 
 {x_opt_model_name_arg}, {x_opt_m_name_arg}:: Use {x_opt_model_arg}
 instead of the default model.
