@@ -522,8 +522,7 @@ fi
 # kitten
 #-----------------------------------------------------------------------
 
-if [[ ${QTTS_MODEL-} == kitten || \
-      ( ! ${QTTS_MODEL+x} && $QTTS_HAVE_DOCKER == 1 ) ]]; then
+if [[ ${QTTS_MODEL-} == kitten ]]; then
   run_dockerized_model kitten
   exit
 fi
@@ -532,7 +531,8 @@ fi
 # kokoro
 #-----------------------------------------------------------------------
 
-if [[ ${QTTS_MODEL-} == kokoro ]]; then
+if [[ ${QTTS_MODEL-} == kokoro || \
+      ( ! ${QTTS_MODEL+x} && $QTTS_HAVE_DOCKER == 1 ) ]]; then
   run_dockerized_model kokoro
   exit
 fi
