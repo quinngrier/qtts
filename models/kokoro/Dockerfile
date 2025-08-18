@@ -8,7 +8,7 @@
 # <https://creativecommons.org/publicdomain/zero/1.0/>.
 #
 
-FROM python:3.10
+FROM python:3.12
 
 RUN : \
   && export DEBIAN_FRONTEND=noninteractive \
