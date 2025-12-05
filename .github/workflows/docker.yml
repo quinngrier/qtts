@@ -75,6 +75,8 @@ jobs:
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
           export DEBIAN_FRONTEND=noninteractive
+
+          # Free up some disk space.
           df -h
           for x in \
             /opt/ghc \
@@ -85,6 +87,7 @@ jobs:
             sudo rm -f -r $x
             df -h
           done
+
           sudo apt-get -q -y update
           sudo apt-get -q -y install ffmpeg
           name=docker.io/quinngrier/qtts-${{ inputs.model }}
