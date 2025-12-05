@@ -34,6 +34,19 @@ jobs:
         run: |
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
+
+          # Free up some disk space.
+          df -h
+          for x in \
+            /opt/ghc \
+            /opt/hostedtoolcache/CodeQL \
+            /usr/local/lib/android \
+            /usr/share/dotnet \
+          ; do
+            sudo rm -f -r $x
+            df -h
+          done
+
           name=docker.io/quinngrier/qtts-${{ inputs.model }}
           docker pull $name
 
