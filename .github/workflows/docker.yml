@@ -29,13 +29,10 @@ jobs:
   keepalive:
     runs-on: ubuntu-latest
     steps:
-      - name: Pull current image
-        id: tag
+      - name: Free up disk space
         run: |
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
-
-          # Free up some disk space.
           df -h
           for x in \
             /opt/ghc \
@@ -46,7 +43,11 @@ jobs:
             sudo rm -f -r $x
             df -h
           done
-
+      - name: Pull current image
+        id: tag
+        run: |
+          set -E -e -o pipefail -u -x || exit $?
+          trap exit ERR
           name=docker.io/quinngrier/qtts-${{ inputs.model }}
           docker pull $name
 
@@ -81,14 +82,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Run test script
+      - name: Free up disk space
         run: |
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
-
-          # Free up some disk space.
           df -h
           for x in \
             /opt/ghc \
@@ -99,7 +96,12 @@ jobs:
             sudo rm -f -r $x
             df -h
           done
-
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run test script
+        run: |
+          set -E -e -o pipefail -u -x || exit $?
+          trap exit ERR
           export DEBIAN_FRONTEND=noninteractive
           sudo apt-get -q -y update
           sudo apt-get -q -y install ffmpeg
