@@ -33,7 +33,7 @@ jobs:
         run: |
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
-          df -h
+          df -h /
           for x in \
             /opt/ghc \
             /opt/hostedtoolcache/CodeQL \
@@ -41,7 +41,7 @@ jobs:
             /usr/share/dotnet \
           ; do
             sudo rm -f -r $x
-            df -h
+            df -h /
           done
       - name: Pull current image
         id: tag
@@ -59,7 +59,7 @@ jobs:
         run: |
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
-          df -h
+          df -h /
           for x in \
             /opt/ghc \
             /opt/hostedtoolcache/CodeQL \
@@ -67,7 +67,7 @@ jobs:
             /usr/share/dotnet \
           ; do
             sudo rm -f -r $x
-            df -h
+            df -h /
           done
       - name: Construct image tag
         id: tag
@@ -100,7 +100,7 @@ jobs:
         run: |
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
-          df -h
+          df -h /
           for x in \
             /opt/ghc \
             /opt/hostedtoolcache/CodeQL \
@@ -108,7 +108,7 @@ jobs:
             /usr/share/dotnet \
           ; do
             sudo rm -f -r $x
-            df -h
+            df -h /
           done
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -146,7 +146,7 @@ jobs:
         run: |
           set -E -e -o pipefail -u -x || exit $?
           trap exit ERR
-          df -h
+          df -h /
           for x in \
             /opt/ghc \
             /opt/hostedtoolcache/CodeQL \
@@ -154,7 +154,7 @@ jobs:
             /usr/share/dotnet \
           ; do
             sudo rm -f -r $x
-            df -h
+            df -h /
           done
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
