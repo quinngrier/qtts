@@ -13,6 +13,8 @@ name: kitten
 on:
   push:
     paths:
+      - .github/workflows/docker.yml
+      - .github/workflows/kitten.yml
       - models/kitten/**
       - "!models/kitten/README.adoc"
   schedule:

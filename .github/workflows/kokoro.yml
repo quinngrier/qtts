@@ -13,6 +13,8 @@ name: kokoro
 on:
   push:
     paths:
+      - .github/workflows/docker.yml
+      - .github/workflows/kokoro.yml
       - models/kokoro/**
       - "!models/kokoro/README.adoc"
       - "!models/kokoro/README.adoc.bash"
