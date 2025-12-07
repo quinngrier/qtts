@@ -55,6 +55,20 @@ jobs:
     needs: keepalive
     runs-on: ubuntu-latest
     steps:
+      - name: Free up disk space
+        run: |
+          set -E -e -o pipefail -u -x || exit $?
+          trap exit ERR
+          df -h
+          for x in \
+            /opt/ghc \
+            /opt/hostedtoolcache/CodeQL \
+            /usr/local/lib/android \
+            /usr/share/dotnet \
+          ; do
+            sudo rm -f -r $x
+            df -h
+          done
       - name: Construct image tag
         id: tag
         run: |
