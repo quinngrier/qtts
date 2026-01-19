@@ -59,8 +59,14 @@
 #       This is <https://github.com/hexgrad/kokoro>.
 #
 
+case ${BASH_VERSINFO-} in [0-4])
+  printf '%s\n' "$0: This script requires Bash version 5 or later. You have version ${BASH_VERSION-Unknown}." >&2
+  exit 1
+esac
+
 set -E -e -o pipefail -u || exit $?
 trap exit ERR
+
 declare -r -x LC_ALL=C
 unset IFS
 
