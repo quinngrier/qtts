@@ -59,7 +59,7 @@
 #       This is <https://github.com/hexgrad/kokoro>.
 #
 
-set -E -e -u -o pipefail || exit $?
+set -E -e -o pipefail -u || exit $?
 trap exit ERR
 declare -r -x LC_ALL=C
 unset IFS
