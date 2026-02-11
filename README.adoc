@@ -38,7 +38,7 @@ it in your `PATH`.
 
 == Models
 
-link:kitten/README.adoc[`kitten`]
-link:kokoro/README.adoc[`kokoro`]
+link:models/kitten/README.adoc[`kitten`]
+link:models/kokoro/README.adoc[`kokoro`]
 
 //
