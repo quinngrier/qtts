@@ -11,6 +11,12 @@
 #
 
 #
+# This is qtts, a CLI for text-to-speech models.
+#
+# See <https://github.com/quinngrier/qtts>.
+#
+
+#
 # TODO: This doc is old. Remove it after it's completely obsolete.
 #
 # Usage: qtts [<word>...]
