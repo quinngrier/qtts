@@ -65,8 +65,10 @@
 #       This is <https://github.com/hexgrad/kokoro>.
 #
 
-case ${BASH_VERSINFO-} in [0-4])
-  printf '%s\n' "$0: This script requires Bash version 5 or later. You have version ${BASH_VERSION-Unknown}." >&2
+case ${BASH_VERSINFO-} in [0-4] | '' | *[!0-9]*)
+  text="This script requires Bash version 5 or later"
+  text="$text. You have version ${BASH_VERSION-unknown}"
+  printf '%s\n' "$0: Error: $text." >&2
   exit 1
 esac
 
