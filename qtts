@@ -65,15 +65,64 @@
 #       This is <https://github.com/hexgrad/kokoro>.
 #
 
-case ${BASH_VERSINFO-} in [0-4] | '' | *[!0-9]*)
-  text="This script requires Bash version 5 or later"
-  text="$text. You have version ${BASH_VERSION-unknown}"
-  printf '%s\n' "$0: Error: $text." >&2
-  exit 1
+#-----------------------------------------------------------------------
+# Set up initial error handling
+#-----------------------------------------------------------------------
+
+set -e -u || exit
+
+#-----------------------------------------------------------------------
+# Set up qsh
+#-----------------------------------------------------------------------
+#
+# This section was generated using qsh.
+# See <https://github.com/quinngrier/qsh>.
+#
+# The authors of this section have waived all copyright and
+# related or neighboring rights to the extent permitted by
+# law as described by the CC0 1.0 Universal Public Domain
+# Dedication. You should have received a copy of the full
+# dedication along with this file, typically as a file
+# named <CC0-1.0.txt>. If not, it may be available at
+# <https://creativecommons.org/publicdomain/zero/1.0/>.
+#
+
+qsh_barf() {
+
+  case $# in (0)
+    set "Unknown error"
+  esac
+
+  qsh_barf_message="$0: Error:"
+  for qsh_barf_text; do
+    qsh_barf_message="$qsh_barf_message $qsh_barf_text"
+  done
+  qsh_barf_message=$qsh_barf_message.
+
+  printf '%s\n' "$qsh_barf_message" >&2
+
+  exit "${qsh_exit_status-1}"
+
+}
+
+#-----------------------------------------------------------------------
+# Set up Bash
+#-----------------------------------------------------------------------
+
+case ${BASH_VERSINFO-} in ('' | *[!0-9]* | 0* | [0-4])
+  qsh_barf \
+    "This script requires Bash version 5.0 or later." \
+    "You have version ${BASH_VERSION-unknown}" \
+  ;
 esac
 
-set -E -e -o pipefail -u || exit $?
-trap exit ERR
+set -o pipefail
+
+shopt -s \
+  inherit_errexit \
+;
+
+#-----------------------------------------------------------------------
 
 declare -r -x LC_ALL=C
 unset IFS

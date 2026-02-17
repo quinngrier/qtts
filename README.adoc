@@ -20,7 +20,7 @@ Here's how to get started:
 
 . Make sure you have the following tools installed:
 
-.. Bash version 5.2.21 or later.
+.. Bash version 5.0 or later.
 You can check this by running `bash --version`.
 
 .. Docker version 28.2.2 or later.
